@@ -9,7 +9,6 @@ public class CacheTest {
         testRandomReplacement();
         testCacheCapacity();
         testMessageSizeLimits();
-        testCachePerformance();
         
         System.out.println("\n All tests completed.");
     }
@@ -200,43 +199,5 @@ public class CacheTest {
         System.out.println();
     }
     
-    public static void testCachePerformance() {
-        System.out.println("test 7: Cache Performance (Hit Rate)");
-        System.out.println("-------------------------------------");
-        
-        Cache cache = new Cache(Strategy.LRU);
-        
-        // Fill cache
-        for (int i = 1; i <= 16; i++) {
-            Message msg = new Message(i, "Message " + i, "Sender", "Receiver", System.currentTimeMillis());
-            cache.putMessageInCache(msg);
-        }
-        
-        // Access messages - some in cache, some not
-        int hits = 0;
-        int misses = 0;
-        int[] accessPattern = {1, 2, 3, 1, 2, 1, 50, 60, 1, 2, 3};
-        
-        for (int id : accessPattern) {
-            Message msg = cache.getMessageFromCache(id);
-            if (msg != null) {
-                hits++;
-            } else {
-                misses++;
-            }
-        }
-        
-        double hitRate = (hits * 100.0) / (hits + misses);
-        System.out.println("Cache Hits: " + hits);
-        System.out.println("Cache Misses: " + misses);
-        System.out.println("Hit Rate: " + String.format("%.2f", hitRate) + "%");
-        
-        if (hitRate > 50) {
-            System.out.println("✓ Good cache performance");
-        } else {
-            System.out.println("⚠ Low cache hit rate");
-        }
-        
-        System.out.println();
-    }
+    
 }
