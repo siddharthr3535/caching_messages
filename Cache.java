@@ -6,6 +6,8 @@ public class Cache {
     int cacheSize;
     int cacheCount;
     CacheStorage head, tail;
+    int cacheHits = 0;
+    int cacheMisses = 0;
     Map<Integer, CacheStorage> map ;
     Strategy strategy;
     Cache(Strategy strategy){
@@ -75,9 +77,10 @@ public class Cache {
     }
     public Message getMessageFromCache(int id){
         if(!map.containsKey(id)){
+            cacheMisses++;
             return null;
         }
-
+        cacheHits++;
         CacheStorage cacheStorage = map.get(id);
         if(strategy == Strategy.LRU){
             removeBlock(cacheStorage);
@@ -110,5 +113,17 @@ public class Cache {
         head.next = least.next;
         cacheCount--;
         
+    }
+    public int getCacheHits() { return cacheHits; }
+    public int getCacheMisses() { return cacheMisses; }
+    public double getHitRatio() {
+        int total = cacheHits + cacheMisses;
+        if (total == 0) return 0.0;
+        return (double) cacheHits / total;
+    }
+    
+    public void resetMetrics() {
+        cacheHits = 0;
+        cacheMisses = 0;
     }
 }
