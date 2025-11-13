@@ -14,9 +14,9 @@ public class Message implements Serializable {
     
     public Message(int id, String content, String sender, String receiver, long timestamp) {
         this.id = id;
-        this.content = content.length() > Config.maxContentLength ? content.substring(0,Config.maxContentLength + 1) : content;
-        this.sender = sender.length() > Config.maxSenderLength ? sender.substring(0,Config.maxSenderLength + 1) : sender;
-        this.receiver = receiver.length() > Config.maxReceiverLength ? receiver.substring(0,Config.maxReceiverLength + 1) : receiver;
+        this.content = content.length() > Config.maxContentLength ? content.substring(0,Config.maxContentLength ) : content;
+        this.sender = sender.length() > Config.maxSenderLength ? sender.substring(0,Config.maxSenderLength ) : sender;
+        this.receiver = receiver.length() > Config.maxReceiverLength ? receiver.substring(0,Config.maxReceiverLength ) : receiver;
         this.delivered = false;
         this.timestamp = timestamp;
     }
