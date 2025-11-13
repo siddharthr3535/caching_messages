@@ -1,6 +1,6 @@
 public class CacheTest {
     
-    public static void main(String[] args) {
+    public void runTests() {
         System.out.println("Testing Cache: \n");
         
         testCacheHitMiss();

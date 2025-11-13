@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class CacheEvaluation {
     
-    public static void main(String[] args) {
+    public void runTests() {
         System.out.println("cache performance evaluation test :\n");
         
         evaluateStrategy(Strategy.LRU);
