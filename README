@@ -1,0 +1,45 @@
+How this program works : 
+
+Message Class Contains:
+1. ID
+2. Content
+3. Sender
+4. Receiver
+5. Timestamp
+6. Delivered 
+
+CacheStorage Class Contains:
+1. Message instance that contains infromation about the message.
+
+Cache Class Contains:
+1. List of CacheStorage instances
+2. Methods to add, retrieve, and delete messages from the cache
+3. Method to clear the cache
+4. Method to get the size of the cache
+5. Method to check if a message exists in the cache
+
+How the Caching is Implemented:
+1. When a message is sent or received, it is added to the cache using the add method.
+   I have used a HashMap to store messages with their ID as the key for quick access.
+   It is in the form of a custom double linked list to maintain the order of messages.
+
+To implement LRU (Least Recently Used) caching, whenever a message is accessed (added or retrieved), 
+it is moved to the front of the linked list. If the cache exceeds its maximum size, the least recently 
+used message (at the end of the list) is removed. This ensures that the most recently used messages 
+are always at the front, and the least recently used ones are evicted first.
+
+To implement LIFO (Last In, First Out) caching, the Message node at the end of the linked list is removed
+when the cache exceeds its maximum size. 
+
+To implement Random deletion, the IDs of the messages are stored in an array, and a random ID is selected
+using the Random class in java. This ensures that the index of the array is always random. 
+
+To enforce message size, there is a properties file that specifies the maximum size of messages allowed in the cache.
+In the Message constructor, a check is performed to ensure that the content size does not exceed this limit.
+
+To ensure that this configuration is flexible, the properties file can be modified without changing the codebase.
+The static block in the Config class loads the properties file at runtime, allowing for easy adjustments to cache settings.
+
+
+
+    
