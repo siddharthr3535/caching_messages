@@ -8,15 +8,26 @@ Message Class Contains:
 5. Timestamp
 6. Delivered 
 
-CacheStorage Class Contains:
-1. Message instance that contains infromation about the message.
+CacheStorage
+Represents a single node in the caches doublylinked list.
+ Contains: Message instance, previous pointer, next pointer
+ Used to maintain cache ordering for replacement algorithms
 
-Cache Class Contains:
-1. List of CacheStorage instances
-2. Methods to add, retrieve, and delete messages from the cache
-3. Method to clear the cache
-4. Method to get the size of the cache
-5. Method to check if a message exists in the cache
+Cache
+ Implements LRU caching with configurable replacement strategies
+ Uses HashMap for O(1) message lookup by ID
+ Uses doublylinked list with dummy head/tail nodes for efficient insertion/deletion
+ Tracks cache hits and misses for performance evaluation
+ Supports three replacement strategies: LRU, LIFO, Random.
+
+ MessageStorage
+ Handles disk I/O operations 
+ Creates binary files in messages directory
+ Integrates with Cache for readthrough caching
+
+  HashMap: Stores <MessageID, CacheStorage> pairs for O(1) lookup
+ DoublyLinked List: Maintains message order for replacement algorithms
+   Dummy head and tail nodes simplify insertion/deletion operations
 
 How the Caching is Implemented:
 1. When a message is sent or received, it is added to the cache using the add method.
