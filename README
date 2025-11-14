@@ -1,56 +1,123 @@
-How this program works : 
+Message Cache System
 
-Message Class Contains:
-1. ID
-2. Content
-3. Sender
-4. Receiver
-5. Timestamp
-6. Delivered 
+Overview
+This program implements a message storage system with configurable caching and page replacement algorithms. Messages are stored on disk, and a subset is kept in memory (cache) for faster access.
+
+Classes
+
+Message
+Contains: ID, Content, Sender, Receiver, Timestamp, Delivered flag
+Enforces fixed message size limits (configurable via properties file)
+Content, sender, and receiver fields are truncated if they exceed configured limits
 
 CacheStorage
-Represents a single node in the caches doublylinked list.
- Contains: Message instance, previous pointer, next pointer
- Used to maintain cache ordering for replacement algorithms
+Represents a single node in the cache's doublylinked list
+Contains: Message instance, previous pointer, next pointer
+Used to maintain cache ordering for replacement algorithms
 
 Cache
- Implements LRU caching with configurable replacement strategies
- Uses HashMap for O(1) message lookup by ID
- Uses doublylinked list with dummy head/tail nodes for efficient insertion/deletion
- Tracks cache hits and misses for performance evaluation
- Supports three replacement strategies: LRU, LIFO, Random.
+Implements caching with configurable replacement strategies (LRU, LIFO, Random)
+Uses HashMap for O(1) message lookup by ID
+Uses doublylinked list with dummy head/tail nodes for efficient insertion/deletion
+Tracks cache hits and misses for performance evaluation
+Supports three replacement strategies: LRU, LIFO, Random
 
- MessageStorage
- Handles disk I/O operations 
- Creates binary files in messages directory
- Integrates with Cache for readthrough caching
+MessageStorage
+Handles disk I/O operations (storing and retrieving messages from files)
+Creates binary files in 'messages/' directory (one file per message: 'msg\_<id>.bin')
+Uses Java serialization for message persistence
 
-  HashMap: Stores <MessageID, CacheStorage> pairs for O(1) lookup
- DoublyLinked List: Maintains message order for replacement algorithms
-   Dummy head and tail nodes simplify insertion/deletion operations
+MessageManager
+Integrates cache and disk storage for transparent message access
+Automatically handles cache misses by loading from disk
+Provides unified interface for storing and retrieving messages
+Demonstrates proper page loading from disk on cache miss
 
-How the Caching is Implemented:
-1. When a message is sent or received, it is added to the cache using the add method.
-   I have used a HashMap to store messages with their ID as the key for quick access.
-   It is in the form of a custom double linked list to maintain the order of messages.
+Config
+Loads configuration from 'config.properties' file at runtime
+Configurable parameters:
+'message.size': Total size of each message (default: 512 bytes)
+'cache.capacity': Maximum number of messages in cache (default: 16)
+'max.content.length': Maximum content length (default: 384 chars)
+'max.sender.length': Maximum sender name length (default: 50 chars)
+'max.receiver.length': Maximum receiver name length (default: 50 chars)
 
-To implement LRU (Least Recently Used) caching, whenever a message is accessed (added or retrieved), 
-it is moved to the front of the linked list. If the cache exceeds its maximum size, the least recently 
-used message (at the end of the list) is removed. This ensures that the most recently used messages 
-are always at the front, and the least recently used ones are evicted first.
+Cache Implementation
 
-To implement LIFO (Last In, First Out) caching, the Message node at the end of the linked list is removed
-when the cache exceeds its maximum size. 
+Architecture
+HashMap: Stores <MessageID, CacheStorage> pairs for O(1) lookup
+DoublyLinked List: Maintains message order for replacement algorithms
+Dummy head and tail nodes simplify insertion/deletion operations
+No null pointer checks needed
 
-To implement Random deletion, the IDs of the messages are stored in an array, and a random ID is selected
-using the Random class in java. This ensures that the index of the array is always random. 
+Cache Operations
 
-To enforce message size, there is a properties file that specifies the maximum size of messages allowed in the cache.
-In the Message constructor, a check is performed to ensure that the content size does not exceed this limit.
+put
 
-To ensure that this configuration is flexible, the properties file can be modified without changing the codebase.
-The static block in the Config class loads the properties file at runtime, allowing for easy adjustments to cache settings.
+1. If message already exists in cache:
+   Update the message content
+   For LRU: move to front (most recently used position)
+   For LIFO/Random: keep in current position
+2. If message is new:
+   Check if cache is full
+   If full: evict message based on replacement strategy
+   Add new message to front of list
+   Add to HashMap
 
+get
 
+1. Check HashMap for message ID
+2. If found (cache hit):
+   For LRU: move to front (mark as recently used)
+   For LIFO/Random: no reordering
+   Return message
+3. If not found (cache miss):
+   Return null
+   MessageManager loads from disk and adds to cache
 
-    
+Replacement Strategies
+
+LRU
+When cache is full: evicts the least recently accessed message
+On access : moves message to front of list
+Front (tail.prev) = most recently used, Back (head.next) = least recently used
+Eviction: removes message at 'head.next'
+
+LIFO
+When cache is full: evicts the most recently added message
+On access: does NOT reorder messages
+Eviction: removes message at 'tail.prev' (most recently added)
+
+Random
+When cache is full: evicts a random message
+On access: does not reorder messages
+Eviction:
+
+1. Gets all message IDs from HashMap
+2. Selects random index using 'Math.random()'
+3. Removes selected message from both list and HashMap
+
+Message Size Enforcement
+
+Messages have a fixed logical size to simulate real memory management:
+Each message occupies exactly 'message.size' bytes (default: 512)
+Total cache size = 'cache.capacity × message.size' (e.g., 16 × 512 = 8KB)
+Field limits enforced in Message constructor:
+Content exceeding 'max.content.length' is truncated
+Sender/receiver exceeding their limits are truncated
+Ensures predictable memory usage
+
+CacheDisk Integration
+
+The system integrates cache and disk storage for transparent access:
+
+1. Store Operation ('MessageManager.storeMessage()'):
+   Writes message to disk
+   Adds message to cache
+
+2. Retrieve Operation ('MessageManager.retrieveMessage()'):
+   First checks cache (cache hit = fast access)
+   If not in cache (cache miss):
+   Loads message from disk
+   Adds to cache for future access
+   Returns message
