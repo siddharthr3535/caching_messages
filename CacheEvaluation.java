@@ -7,7 +7,7 @@ import java.util.Random;
 public class CacheEvaluation {
     
     public void runTests() {
-        System.out.println("=== CACHE PERFORMANCE EVALUATION ===\n");
+        System.out.println("CACHE PERFORMANCE EVALUATION\n");
         
         evaluateStrategy(Strategy.LRU);
         evaluateStrategy(Strategy.LIFO);
@@ -20,7 +20,6 @@ public class CacheEvaluation {
      
     public static void evaluateStrategy(Strategy strategy) {
         System.out.println("Testing Strategy: " + strategy);
-        System.out.println("=====================================");
         
         int TOTAL_MESSAGES = 100;
         int ACCESS_COUNT = 1000;
@@ -42,7 +41,7 @@ public class CacheEvaluation {
         manager.resetMetrics();
         
         // Perform 1000 random accesses
-        System.out.println("Performing " + ACCESS_COUNT + " random accesses...");
+        System.out.println("Performing " + ACCESS_COUNT + " random accesses");
         Random random = new Random(42);  
         
         for (int i = 0; i < ACCESS_COUNT; i++) {
@@ -57,7 +56,6 @@ public class CacheEvaluation {
         double hitRatio = manager.getHitRatio();
         
         System.out.println("\nRESULTS:");
-        System.out.println("--------");
         System.out.println("Cache Hits:    " + hits + " / 1000 accesses");
         System.out.println("Cache Misses:  " + misses + " / 1000 accesses");
         System.out.println("Hit Ratio:     " + String.format("%.2f%%", hitRatio * 100));
