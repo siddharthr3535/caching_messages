@@ -1,0 +1,28 @@
+CACHE PERFORMANCE EVALUATION
+
+Testing Strategy: LRU
+
+RESULTS:
+
+Cache Hits: 175 / 1000 accesses
+Cache Misses: 825 / 1000 accesses
+Hit Ratio: 17.50%
+Miss Ratio: 82.50%
+
+Testing Strategy: LIFO
+
+RESULTS:
+
+Cache Hits: 169 / 1000 accesses
+Cache Misses: 831 / 1000 accesses
+Hit Ratio: 16.90%
+Miss Ratio: 83.10%
+
+Testing Strategy: RANDOM
+
+RESULTS:
+
+Cache Hits: 160 / 1000 accesses
+Cache Misses: 840 / 1000 accesses
+Hit Ratio: 16.00%
+Miss Ratio: 84.00%

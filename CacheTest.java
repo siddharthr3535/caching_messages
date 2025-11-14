@@ -50,8 +50,10 @@ public class CacheTest {
             manager.storeMessage(msg);
         }
         
+        manager.resetMetrics();
+        
         System.out.println("Accessing message 1");
-        manager.retrieveMessage(1);
+        manager.retrieveMessage(1);  
         
         System.out.println("Adding message 17 , this should evict message 2 as it is least recently used");
         Message msg17 = manager.createMessage(17, "Message 17", "naane", "neeye", System.currentTimeMillis());
@@ -63,10 +65,14 @@ public class CacheTest {
             System.out.println("Failed, Message 1 not in cache");
         }
         
-        if (manager.retrieveMessage(2) == null) {
-            System.out.println("works, message 2 evicted ");
+        int missesBeforeMsg2 = manager.getCacheMisses();
+        manager.retrieveMessage(2); 
+        int missesAfterMsg2 = manager.getCacheMisses();
+        
+        if (missesAfterMsg2 > missesBeforeMsg2) {
+            System.out.println("works, message 2 was evicted (cache miss occurred)");
         } else {
-            System.out.println("failed, message 2 still there");
+            System.out.println("failed, message 2 still in cache");
         }
         
         if (manager.retrieveMessage(17) != null) {
@@ -89,6 +95,8 @@ public class CacheTest {
             manager.storeMessage(msg);
         }
         
+        manager.resetMetrics();
+        
         System.out.println("Accessing message 1 ");
         manager.retrieveMessage(1);
         
@@ -96,8 +104,12 @@ public class CacheTest {
         Message msg17 = manager.createMessage(17, "Message 17", "sid", "shan", System.currentTimeMillis());
         manager.storeMessage(msg17);
         
-        if (manager.retrieveMessage(16) == null) {
-            System.out.println("works, Message 16 evicted");
+        int missesBeforeMsg16 = manager.getCacheMisses();
+        manager.retrieveMessage(16);
+        int missesAfterMsg16 = manager.getCacheMisses();
+        
+        if (missesAfterMsg16 > missesBeforeMsg16) {
+            System.out.println("works, Message 16 was evicted (cache miss)");
         } else {
             System.out.println("failed, Message 16 should be evicted");
         }
@@ -122,22 +134,27 @@ public class CacheTest {
             manager.storeMessage(msg);
         }
         
+        manager.resetMetrics();
+        
         System.out.println("Adding 5 new messages with random eviction");
-        int evictedCount = 0;
         for (int i = 17; i <= 21; i++) {
             Message msg = manager.createMessage(i, "Message " + i, "me", "you", System.currentTimeMillis());
             manager.storeMessage(msg);
-            for (int j = 1; j <= 16; j++) {
-                if (manager.retrieveMessage(j) == null) {
-                    evictedCount++;
-                }
+        }
+    
+        int cacheMisses = 0;
+        for (int j = 1; j <= 16; j++) {
+            int missesBeforeCheck = manager.getCacheMisses();
+            manager.retrieveMessage(j);
+            if (manager.getCacheMisses() > missesBeforeCheck) {
+                cacheMisses++;
             }
         }
         
-        if (evictedCount >= 5) {
-            System.out.println("works, 5 were evicted");
+        if (cacheMisses >= 5) {
+            System.out.println("works, " + cacheMisses + " messages were evicted");
         } else {
-            System.out.println("failed, 5 messages were not evicted");
+            System.out.println("failed, only " + cacheMisses + " messages were evicted");
         }
         
         System.out.println();
@@ -154,17 +171,21 @@ public class CacheTest {
             manager.storeMessage(msg);
         }
         
+        manager.resetMetrics();
+        
         int inCache = 0;
         for (int i = 1; i <= 20; i++) {
-            if (manager.retrieveMessage(i) != null) {
-                inCache++;
+            int hitsBeforeCheck = manager.getCacheHits();
+            manager.retrieveMessage(i);
+            if (manager.getCacheHits() > hitsBeforeCheck) {
+                inCache++;  
             }
         }
         
         if (inCache <= Config.cacheCapacity) {
-            System.out.println("works, expected is " + inCache + " messages in cache");
+            System.out.println("works, " + inCache + " messages in cache (capacity: " + Config.cacheCapacity + ")");
         } else {
-            System.out.println("failed, capacity was exceeded.");
+            System.out.println("failed, capacity was exceeded: " + inCache + " > " + Config.cacheCapacity);
         }
         
         System.out.println();
