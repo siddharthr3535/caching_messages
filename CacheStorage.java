@@ -1,3 +1,5 @@
+
+// A class to represent a node in a doubly linked list for caching messages
 public class CacheStorage {
     Message message;
     CacheStorage prev, next;

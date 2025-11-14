@@ -9,11 +9,11 @@ public class CacheTest {
         testRandomReplacement();
         testCacheCapacity();
         testMessageSizeLimits();
-        testDiskIntegration();  // ✅ New test
+        testDiskIntegration(); 
         
         System.out.println("\n All tests completed.");
     }
-    
+
     public static void testCacheHitMiss() {
         System.out.println("test 1: Cache Hit/Miss Detection - LRU");
         

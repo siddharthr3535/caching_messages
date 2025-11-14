@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.util.Properties;
 
+// Configuration class to load settings from config.properties file.
 public class Config {
     static int messageSize;
     static int cacheCapacity;

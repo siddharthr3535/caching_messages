@@ -1,3 +1,4 @@
+// A simple test suite for the MessageStorage class
 public class Test {
     public void runTests(){
         System.out.println("Test 1: Create and store a message");

@@ -1,5 +1,6 @@
 import java.io.Serializable;
 
+// Represents a message with content, sender, receiver, delivery status, and timestamp.
 public class Message implements Serializable {
 
     private int id;
@@ -8,7 +9,7 @@ public class Message implements Serializable {
     private String receiver;
     private boolean delivered;
     private long timestamp;
-    
+    // Constructor to initialize a Message object with given parameters.
     public Message(int id, String content, String sender, String receiver, long timestamp) {
         this.id = id;
         this.content = content.length() > Config.maxContentLength ? content.substring(0,Config.maxContentLength ) : content;
@@ -18,7 +19,7 @@ public class Message implements Serializable {
         this.timestamp = timestamp;
     }
     
-
+    // Getter methods for accessing private fields.
     public int getId() { 
         return id; 
     }
