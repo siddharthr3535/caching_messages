@@ -1,2 +1,5 @@
 /messages
 *.class
+.DS_Store
+*.zip
+*.tar
