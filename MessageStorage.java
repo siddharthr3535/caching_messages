@@ -7,9 +7,17 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Handles persistent storage of messages to disk.
+ * Messages are stored as binary files in messages/ directory.
+ */
 class MessageStorage {
+    private static final String MESSAGES_DIR = "messages";
     
-    
+    /**
+     * Creates a new message with given parameters.
+     * Returns null if creation fails.
+     */
     public static Message createMessage(int id, String content, String sender, 
                                        String receiver, long timestamp) {
         try {
@@ -20,6 +28,11 @@ class MessageStorage {
         }
     }
     
+    /**
+     * Stores message to disk as binary file msg_id.bin.
+     * Creates messages/ directory if it doesn't exist.
+     * Returns 0 on success, -1 on failure.
+     */
     public static int storeMessage(Message msg) {
         if (msg == null) {
             System.out.println("Cannot store null message");
@@ -27,9 +40,9 @@ class MessageStorage {
         }
         
         try {
-            Files.createDirectories(Paths.get("messages"));
+            Files.createDirectories(Paths.get(MESSAGES_DIR));
             
-            String filename = String.format("%s/msg_%d.bin", "messages", msg.getId());
+            String filename = String.format("%s/msg_%d.bin", MESSAGES_DIR, msg.getId());
             
             try (FileOutputStream fos = new FileOutputStream(filename);
                  ObjectOutputStream oos = new ObjectOutputStream(fos)) {
@@ -43,8 +56,12 @@ class MessageStorage {
         }
     }
     
+    /**
+     * Retrieves message from disk by ID.
+     * Returns null if file not found or read fails.
+     */
     public static Message retrieveMessage(int id) {
-        String filename = String.format("%s/msg_%d.bin", "messages", id);
+        String filename = String.format("%s/msg_%d.bin", MESSAGES_DIR, id);
         
         try (FileInputStream fis = new FileInputStream(filename);
              ObjectInputStream ois = new ObjectInputStream(fis)) {

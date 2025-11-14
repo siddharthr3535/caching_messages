@@ -9,6 +9,7 @@ public class CacheTest {
         testRandomReplacement();
         testCacheCapacity();
         testMessageSizeLimits();
+        testDiskIntegration();  // ✅ New test
         
         System.out.println("\n All tests completed.");
     }
@@ -16,20 +17,19 @@ public class CacheTest {
     public static void testCacheHitMiss() {
         System.out.println("test 1: Cache Hit/Miss Detection - LRU");
         
-        Cache cache = new Cache(Strategy.LRU);
+        MessageManager manager = new MessageManager(Strategy.LRU);  
         
-        Message msg1 = new Message(1, "Test message lru", "Sid", "shan", System.currentTimeMillis());
-        cache.putMessageInCache(msg1);
+        Message msg1 = manager.createMessage(1, "Test message lru", "Sid", "shan", System.currentTimeMillis());
+        manager.storeMessage(msg1);  
         
-        Message retrieved = cache.getMessageFromCache(1);
+        Message retrieved = manager.retrieveMessage(1); 
         if (retrieved != null && retrieved.getId() == 1) {
             System.out.println("Message found in cache , works");
         } else {
             System.out.println("Failed, Message not in cache");
         }
         
-
-        Message missing = cache.getMessageFromCache(999);
+        Message missing = manager.retrieveMessage(999); 
         if (missing == null) {
             System.out.println("works,  Non existent message returned null");
         } else {
@@ -42,34 +42,34 @@ public class CacheTest {
     public static void testLRUReplacement() {
         System.out.println("test 2: LRU Replacement");
         
-        Cache cache = new Cache(Strategy.LRU);
+        MessageManager manager = new MessageManager(Strategy.LRU);
         
         System.out.println("Filling cache with 16 messages");
         for (int i = 1; i <= 16; i++) {
-            Message msg = new Message(i, "Message " + i, "na dhan", "yaara irundha enna", System.currentTimeMillis());
-            cache.putMessageInCache(msg);
+            Message msg = manager.createMessage(i, "Message " + i, "na dhan", "yaara irundha enna", System.currentTimeMillis());
+            manager.storeMessage(msg);
         }
         
         System.out.println("Accessing message 1");
-        cache.getMessageFromCache(1);
+        manager.retrieveMessage(1);
         
         System.out.println("Adding message 17 , this should evict message 2 as it is least recently used");
-        Message msg17 = new Message(17, "Message 17", "naane", "neeye", System.currentTimeMillis());
-        cache.putMessageInCache(msg17);
+        Message msg17 = manager.createMessage(17, "Message 17", "naane", "neeye", System.currentTimeMillis());
+        manager.storeMessage(msg17);
         
-        if (cache.getMessageFromCache(1) != null) {
+        if (manager.retrieveMessage(1) != null) {
             System.out.println("Message 1 still in cache, works");
         } else {
             System.out.println("Failed, Message 1 not in cache");
         }
         
-        if (cache.getMessageFromCache(2) == null) {
+        if (manager.retrieveMessage(2) == null) {
             System.out.println("works, message 2 evicted ");
         } else {
             System.out.println("failed, message 2 still there");
         }
         
-        if (cache.getMessageFromCache(17) != null) {
+        if (manager.retrieveMessage(17) != null) {
             System.out.println("Message 17 in cache, works");
         } else {
             System.out.println("failed, message 17 is not there");
@@ -81,29 +81,28 @@ public class CacheTest {
     public static void testLIFOReplacement() {
         System.out.println("test 3: LIFO Replacement");
         
-        Cache cache = new Cache(Strategy.LIFO);
+        MessageManager manager = new MessageManager(Strategy.LIFO);
         
         System.out.println("Filling cache with 16 messages");
         for (int i = 1; i <= 16; i++) {
-            Message msg = new Message(i, "Message " + i, "sid", "shan", System.currentTimeMillis());
-            cache.putMessageInCache(msg);
+            Message msg = manager.createMessage(i, "Message " + i, "sid", "shan", System.currentTimeMillis());
+            manager.storeMessage(msg);
         }
         
         System.out.println("Accessing message 1 ");
-        cache.getMessageFromCache(1);
+        manager.retrieveMessage(1);
         
-
         System.out.println("Adding message 17 , should evice  the last message 16");
-        Message msg17 = new Message(17, "Message 17", "sid", "shan", System.currentTimeMillis());
-        cache.putMessageInCache(msg17);
+        Message msg17 = manager.createMessage(17, "Message 17", "sid", "shan", System.currentTimeMillis());
+        manager.storeMessage(msg17);
         
-        if (cache.getMessageFromCache(16) == null) {
+        if (manager.retrieveMessage(16) == null) {
             System.out.println("works, Message 16 evicted");
         } else {
             System.out.println("failed, Message 16 should be evicted");
         }
         
-        if (cache.getMessageFromCache(1) != null) {
+        if (manager.retrieveMessage(1) != null) {
             System.out.println("works, Message 1 still in cache");
         } else {
             System.out.println("failed,  Message 1 should still be in cache");
@@ -115,21 +114,21 @@ public class CacheTest {
     public static void testRandomReplacement() {
         System.out.println("test 4 : Random Replacement");
         
-        Cache cache = new Cache(Strategy.RANDOM);
+        MessageManager manager = new MessageManager(Strategy.RANDOM);
         
         System.out.println("Filling cache with 16 messages");
         for (int i = 1; i <= 16; i++) {
-            Message msg = new Message(i, "Message " + i, "me", "you", System.currentTimeMillis());
-            cache.putMessageInCache(msg);
+            Message msg = manager.createMessage(i, "Message " + i, "me", "you", System.currentTimeMillis());
+            manager.storeMessage(msg);
         }
         
         System.out.println("Adding 5 new messages with random eviction");
         int evictedCount = 0;
         for (int i = 17; i <= 21; i++) {
-            Message msg = new Message(i, "Message " + i, "me", "you", System.currentTimeMillis());
-            cache.putMessageInCache(msg);
+            Message msg = manager.createMessage(i, "Message " + i, "me", "you", System.currentTimeMillis());
+            manager.storeMessage(msg);
             for (int j = 1; j <= 16; j++) {
-                if (cache.getMessageFromCache(j) == null) {
+                if (manager.retrieveMessage(j) == null) {
                     evictedCount++;
                 }
             }
@@ -147,17 +146,17 @@ public class CacheTest {
     public static void testCacheCapacity() {
         System.out.println("test 5: Cache Capacity");
         
-        Cache cache = new Cache(Strategy.LRU);
+        MessageManager manager = new MessageManager(Strategy.LRU);
         
         System.out.println("Adding 20 messages now that the capacity is 16.");
         for (int i = 1; i <= 20; i++) {
-            Message msg = new Message(i, "Message " + i, "sid", "shan", System.currentTimeMillis());
-            cache.putMessageInCache(msg);
+            Message msg = manager.createMessage(i, "Message " + i, "sid", "shan", System.currentTimeMillis());
+            manager.storeMessage(msg);
         }
         
         int inCache = 0;
         for (int i = 1; i <= 20; i++) {
-            if (cache.getMessageFromCache(i) != null) {
+            if (manager.retrieveMessage(i) != null) {
                 inCache++;
             }
         }
@@ -199,5 +198,43 @@ public class CacheTest {
         System.out.println();
     }
     
-    
+  // loads back from the disk on cache miss
+    public static void testDiskIntegration() {
+        System.out.println("test 7: Cache-Disk Integration (Load from Disk)");
+        
+        MessageManager manager = new MessageManager(Strategy.LRU);
+        
+        // Store 20 messages (cache only holds 16)
+        System.out.println("Storing 20 messages (cache capacity: 16)");
+        for (int i = 1; i <= 20; i++) {
+            Message msg = manager.createMessage(i, "Message " + i, "sid", "shan", System.currentTimeMillis());
+            manager.storeMessage(msg);
+        }
+        
+        manager.resetMetrics();
+        
+        // Try to access message 1 (should be evicted from cache, but on disk)
+        System.out.println("Accessing message 1 (evicted from cache)...");
+        Message msg1 = manager.retrieveMessage(1);
+        
+        if (msg1 != null && msg1.getId() == 1) {
+            System.out.println("works, Message loaded from disk and added to cache");
+            System.out.println("Cache misses: " + manager.getCacheMisses());
+            System.out.println("Cache hits: " + manager.getCacheHits());
+        } else {
+            System.out.println("failed, Could not load message from disk");
+        }
+        
+        // Access same message again (should be cache hit now)
+        System.out.println("Accessing message 1 again...");
+        Message msg1Again = manager.retrieveMessage(1);
+        
+        if (msg1Again != null && manager.getCacheHits() > 0) {
+            System.out.println("works, Message found in cache (cache hit)");
+        } else {
+            System.out.println("failed, Should be cache hit");
+        }
+        
+        System.out.println();
+    }
 }
